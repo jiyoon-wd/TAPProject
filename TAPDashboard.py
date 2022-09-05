@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[101]:
+# In[110]:
 
 
 #Calling Libraries and dash packages
@@ -17,7 +17,7 @@ from dash.dependencies import Input, Output, State
 from plotly.colors import DEFAULT_PLOTLY_COLORS   # chart default colors
 
 
-# In[102]:
+# In[111]:
 
 
 #Calling Data
@@ -26,7 +26,8 @@ df_post = pd.read_excel(path+'post.xlsx')
 df_pre = pd.read_excel(path+'pre.xlsx')
 
 
-# In[103]:
+
+# In[112]:
 
 
 # App structure
@@ -37,7 +38,7 @@ def customwrap(s,width=15):
     return "<br>".join(textwrap.wrap(s,width=width))
 
 
-# In[104]:
+# In[113]:
 
 
 #Pie chart
@@ -49,7 +50,7 @@ fig_gender=px.pie(df_pre, names='Gender', color='Gender', title= 'Gender')
 fig_ethnicity=px.pie(df_pre, names='Ethnicity', color='Ethnicity',title='Ethnicity')
 
 
-# In[105]:
+# In[114]:
 
 
 #Radar Chart(rad)
@@ -101,7 +102,7 @@ layout=go.Layout(margin=dict(l=100, r=100, b=40, t=40), title='While Loop Score 
 fig_radWL=go.Figure(data, layout)
 
 
-# In[106]:
+# In[115]:
 
 
 #Line Graph(L)
@@ -109,19 +110,18 @@ fig_radWL=go.Figure(data, layout)
 ##Students' Grade Average Pre&Post Survey Comparison
 df_post['PostGrade']=df_post['Grade']*100
 df_pre['PreGrade']=df_pre['Grade']*100
-df_pre=df_pre.sort_index()
-df_post=df_post.sort_index()
 df_combine=df_pre.merge(df_post, left_on='First name', right_on="First name", how='left')
-
-df_combine=df_combine.loc[:,['First name','PreGrade','PostGrade']].groupby(by=['First name'], as_index=False).sum()
-Lpre=go.Scatter(x=df_combine['First name'], y=df_combine['PreGrade'], mode='lines+markers', marker=dict(size=5), name="Pre Survey")
-Lpost=go.Scatter(x=df_combine['First name'], y=df_combine['PostGrade'], mode='lines+markers', marker=dict(size=5), name="Post Survey")
+df_combine['Index'] = df_combine.index
+df_combine=df_combine.loc[:,['Index','PreGrade','PostGrade']].groupby(by=['Index'], as_index=False).sum()
+Lpre=go.Scatter(x=df_combine['Index'], y=df_combine['PreGrade'], mode='lines+markers', marker=dict(size=5), name="Pre Survey")
+Lpost=go.Scatter(x=df_combine['Index'], y=df_combine['PostGrade'], mode='lines+markers', marker=dict(size=5), name="Post Survey")
 data=[Lpre,Lpost]
 layout=go.Layout(title='Individual Student\'s Improvement ', xaxis=dict(title='Students'), yaxis=dict(title='Grade Average'))
 fig_L=go.Figure(data,layout)
+fig_L.show()
 
 
-# In[107]:
+# In[116]:
 
 
 #Sankey Diagram(San)
@@ -181,8 +181,9 @@ layout=go.Layout(
 fig_San=go.Figure(data,layout)
 
 ###In order to label each column with question
-cols = ["Are you a musician?","Did you enjoy learning the new technology?","How difficult was learning the new technology?"]
+cols = ["Are you a musician?","Did you enjoy the learning?","How difficult was the learning?"]
 for x_coordinate, column_name in enumerate(cols):
+    wrapped_cols = list(map(customwrap, cols))
     fig_San.add_annotation(
         x=x_coordinate/(len(cols)-1),
         y=1.05,
@@ -199,7 +200,7 @@ for x_coordinate, column_name in enumerate(cols):
         )
 
 
-# In[108]:
+# In[117]:
 
 
 #Bar Graph (B)
@@ -214,11 +215,11 @@ Bar = go.Bar(x = df_B['Are you a musician?'], # x axis - Are you a musician?
                textposition = 'none' # option for bar
                    )
 data = [Bar] # save as a list in the data object
-layout = go.Layout(title = 'Grade Average in Each Group', width=1000, height=600, xaxis=dict(title='Groups'), yaxis=dict(title='Grade Average')) # set title
+layout = go.Layout(title = 'Grade Average in Each Group', height=600, xaxis=dict(title='Groups'), yaxis=dict(title='Grade Average')) # set title
 fig_B = go.Figure(data, layout)
 
 
-# In[109]:
+# In[ ]:
 
 
 #App Layout
@@ -256,13 +257,13 @@ app.layout = html.Div([
     html.Div(
             children=[
                 #Sankey Diagram-workshop feedback
-                html.Div(dcc.Graph(figure=fig_San)),
+                html.Div(dcc.Graph(figure=fig_San),style={'float':'left', 'width':'100%'}),
                 #Bar graph-grade comparison of musicians vs. non musicians
-                html.Div(dcc.Graph(figure=fig_B)),
+                html.Div(dcc.Graph(figure=fig_B),style={'float':'left', 'width':'100%'}),
                 html.Div(
                     children=[html.H1('Conclusion', style={'textAlign':'center'}
                                 ),
-                         html.P('Based on the data showing correlations between reading music and obtaining programming concepts, I strongly encourage band or orchestra students in middle school and high school to take programming courses. In addition, a double major in music and programming is an excellent option for upcoming college students, especially for talented musicians who do not consider music as their future career. I also recommend that programming students learn to play an instrument as a hobby; however, I need further research on that statement because current data does not guarantee that programmers may be good musicians.'
+                         html.P('Not all musicians outperformed non-musicians, but musicians who can read music scores performed the best among all students on average. While students had the most difficulty with "If...else" statements and "While Loop" questions(less than 20% of improvement compared to pre-survey), most of the correct answers came from the musicians group who can read music. This study revealed that programming is not directly related to the music itself but the score structures that musicians learn to read. For example, the "While loop" and "If...else" from coding share similarities to repeat sign and coda symbols from music scores, respectively. Through the dashboard, we can predict the possible success of students who are studying or knows how to read music scores. Encouraging band or orchestra students in middle and high school to take programming courses, especially talented musicians who do not consider music as their future career, will help to bring more art and creativity to the IT field.'
                                )
                              ])
             ], 
